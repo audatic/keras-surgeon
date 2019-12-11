@@ -5,10 +5,12 @@ from keras.layers import Layer
 from keras.activations import linear
 
 
-def clean_copy(model):
+def clean_copy(model, custom_objects=None):
     """Returns a copy of the model without other model uses of its layers."""
     weights = model.get_weights()
-    new_model = model.__class__.from_config(model.get_config())
+    new_model = model.__class__.from_config(
+        model.get_config(), custom_objects=custom_objects
+    )
     new_model.set_weights(weights)
     return new_model
 

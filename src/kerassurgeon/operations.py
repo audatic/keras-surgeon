@@ -1,7 +1,7 @@
 from kerassurgeon.surgeon import Surgeon
 
 
-def delete_layer(model, layer, *, node_indices=None, copy=True):
+def delete_layer(model, layer, *, node_indices=None, copy=True, custom_objects=None):
     """Delete instances of a layer from a Keras model.
 
     Args:
@@ -16,7 +16,7 @@ def delete_layer(model, layer, *, node_indices=None, copy=True):
     Returns:
         Keras Model object with the layer at node_index deleted.
     """
-    surgeon = Surgeon(model, copy)
+    surgeon = Surgeon(model, copy, custom_objects)
     surgeon.add_job('delete_layer', layer, node_indices=node_indices)
     return surgeon.operate()
 

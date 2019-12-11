@@ -31,9 +31,10 @@ class Surgeon:
         copy: If True, the model will be copied before and after any operations
               This keeps the layers in the original model and the new model separate.
     """
-    def __init__(self, model, copy=None):
+    def __init__(self, model, copy=None, custom_objects=None):
+        self._custom_objects = custom_objects
         if copy:
-            self.model = utils.clean_copy(model)
+            self.model = utils.clean_copy(model, self._custom_objects)
         else:
             self.model = model
         self.nodes = []
@@ -166,7 +167,7 @@ class Surgeon:
         new_model = Model(self.model.inputs, new_outputs)
 
         if self._copy:
-            return utils.clean_copy(new_model)
+            return utils.clean_copy(new_model, self._custom_objects)
         else:
             return new_model
 
