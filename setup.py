@@ -5,7 +5,7 @@ from setuptools import find_packages
 
 
 setup(
-    name='kerassurgeon',
+    name='audatic-kerassurgeon',
     version="0.1.3",
     url='https://github.com/BenWhetton/keras-surgeon',
     license='MIT',
