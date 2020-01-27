@@ -1,6 +1,7 @@
 """Utilities used across other modules."""
 import warnings
 import numpy as np
+import tensorflow
 from keras.layers import Layer
 from keras.activations import linear
 
@@ -177,6 +178,43 @@ def single_element(x):
     if len(x) == 1:
         x = x[0]
     return x
+
+
+def multiple_elements(x):
+    """Ensures x is multiple elements. If x is not a list or a tuple,
+    return a list containing it; otherwise return x"""
+    if isinstance(x, (list, tuple)):
+        return x
+    return [x]
+
+
+def check_tf_model(model):
+    """Adapt node data structure in tensorflow.keras models to the structure of keras
+    models which is expected by this library"""
+    for node in get_model_nodes(model):
+        check_tf_node(node)
+
+
+def check_tf_node(node):
+    """If node is a tensorflow.keras node it has a slightly different attribute
+    structure, which is corrected in this function"""
+    if not isinstance(node, tensorflow.python.keras.engine.node.Node):
+        return node
+
+    # ensure node attributes have multiple elements
+    attributes = [
+        'inbound_layers',
+        'input_shapes',
+        'input_tensors',
+        'node_indices',
+        'output_shapes',
+        'output_tensors',
+        'tensor_indices',
+    ]
+    for attr in attributes:
+        values = multiple_elements(getattr(node, attr))
+        setattr(node, attr, values)
+    return node
 
 
 def bool_to_index(x):

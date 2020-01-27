@@ -3,10 +3,9 @@ import logging
 import numpy as np
 from keras.engine.topology import Node
 from keras.layers import BatchNormalization
-from keras.models import Model
 
 from kerassurgeon import utils
-from kerassurgeon.utils import get_inbound_nodes
+from kerassurgeon.utils import get_inbound_nodes, check_tf_model
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -37,6 +36,8 @@ class Surgeon:
             self.model = utils.clean_copy(model, self._custom_objects)
         else:
             self.model = model
+        self._model_cls = self.model.__class__
+        check_tf_model(self.model)
         self.nodes = []
         self._copy = copy
         self._finished_nodes = {}
@@ -164,7 +165,7 @@ class Surgeon:
             layer, node_index, tensor_index = output._keras_history
             output_nodes.append(get_inbound_nodes(layer)[node_index])
         new_outputs, _ = self._rebuild_graph(self.model.inputs, output_nodes)
-        new_model = Model(self.model.inputs, new_outputs)
+        new_model = self._model_cls(self.model.inputs, new_outputs)
 
         if self._copy:
             return utils.clean_copy(new_model, self._custom_objects)
