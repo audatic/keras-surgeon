@@ -4,6 +4,7 @@ import numpy as np
 import tensorflow
 from keras.layers import Layer
 from keras.activations import linear
+import tensorflow.python.keras.engine as engine
 
 
 def clean_copy(model, custom_objects=None):
@@ -18,12 +19,12 @@ def clean_copy(model, custom_objects=None):
 
 def get_channels_attr(layer):
     layer_config = layer.get_config()
-    if 'units' in layer_config.keys():
-        channels_attr = 'units'
-    elif 'filters' in layer_config.keys():
-        channels_attr = 'filters'
+    if "units" in layer_config.keys():
+        channels_attr = "units"
+    elif "filters" in layer_config.keys():
+        channels_attr = "filters"
     else:
-        raise ValueError('This layer has not got any channels.')
+        raise ValueError("This layer has not got any channels.")
     return channels_attr
 
 
@@ -43,7 +44,7 @@ def get_node_depth(model, node):
     for (depth, nodes_at_depth) in get_nodes_by_depth(model).items():
         if node in nodes_at_depth:
             return depth
-    raise KeyError('The node is not contained in the model.')
+    raise KeyError("The node is not contained in the model.")
 
 
 def check_for_layer_reuse(model, layers=None):
@@ -89,37 +90,45 @@ def get_shallower_nodes(node):
 
 
 def get_node_inbound_nodes(node):
-    return [get_inbound_nodes(node.inbound_layers[i])[node_index]
-            for i, node_index in enumerate(node.node_indices)]
+    return [
+        get_inbound_nodes(node.inbound_layers[i])[node_index]
+        for i, node_index in enumerate(node.node_indices)
+    ]
 
 
 def get_inbound_nodes(layer):
     try:
-        return getattr(layer, '_inbound_nodes')
+        return getattr(layer, "_inbound_nodes")
     except AttributeError:
-        warnings.warn("Please update keras to version 2.1.3 or greater."
-                      "Support for earlier versions will be dropped in a "
-                      "future release.")
+        warnings.warn(
+            "Please update keras to version 2.1.3 or greater."
+            "Support for earlier versions will be dropped in a "
+            "future release."
+        )
         return layer.inbound_nodes
 
 
 def get_outbound_nodes(layer):
     try:
-        return getattr(layer, '_outbound_nodes')
+        return getattr(layer, "_outbound_nodes")
     except AttributeError:
-        warnings.warn("Please update keras to version 2.1.3 or greater."
-                      "Support for earlier versions will be dropped in a "
-                      "future release.")
+        warnings.warn(
+            "Please update keras to version 2.1.3 or greater."
+            "Support for earlier versions will be dropped in a "
+            "future release."
+        )
         return layer.outbound_nodes
 
 
 def get_nodes_by_depth(model):
     try:
-        return getattr(model, '_nodes_by_depth')
+        return getattr(model, "_nodes_by_depth")
     except AttributeError:
-        warnings.warn("Please update keras to version 2.1.3 or greater."
-                      "Support for earlier versions will be dropped in a "
-                      "future release.")
+        warnings.warn(
+            "Please update keras to version 2.1.3 or greater."
+            "Support for earlier versions will be dropped in a "
+            "future release."
+        )
         return model.nodes_by_depth
 
 
@@ -142,29 +151,35 @@ def find_activation_layer(layer, node_index):
     # Loop will be broken by an error if an output layer is encountered
     while True:
         # If maybe_layer has a nonlinear activation function return it and its index
-        activation = getattr(maybe_layer, 'activation', linear)
-        if activation.__name__ != 'linear':
+        activation = getattr(maybe_layer, "activation", linear)
+        if activation.__name__ != "linear":
             if maybe_layer.get_output_shape_at(node_index) != output_shape:
-                ValueError('The activation layer ({0}), does not have the same'
-                           ' output shape as {1}'.format(maybe_layer.name,
-                                                         layer.name))
+                ValueError(
+                    "The activation layer ({0}), does not have the same"
+                    " output shape as {1}".format(maybe_layer.name, layer.name)
+                )
             return maybe_layer, node_index
 
         # If not, move to the next layer in the datastream
         next_nodes = get_shallower_nodes(node)
         # test if node is a list of nodes with more than one item
         if len(next_nodes) > 1:
-            ValueError('The model must not branch between the chosen layer'
-                       ' and the activation layer.')
+            ValueError(
+                "The model must not branch between the chosen layer"
+                " and the activation layer."
+            )
         node = next_nodes[0]
         node_index = get_node_index(node)
         maybe_layer = node.outbound_layer
 
         # Check if maybe_layer has weights, no activation layer has been found
         if maybe_layer.weights and (
-                not maybe_layer.__class__.__name__.startswith('Global')):
-            AttributeError('There is no nonlinear activation layer between {0}'
-                           ' and {1}'.format(layer.name, maybe_layer.name))
+            not maybe_layer.__class__.__name__.startswith("Global")
+        ):
+            AttributeError(
+                "There is no nonlinear activation layer between {0}"
+                " and {1}".format(layer.name, maybe_layer.name)
+            )
 
 
 def sort_x_by_y(x, y):
@@ -198,18 +213,18 @@ def check_tf_model(model):
 def check_tf_node(node):
     """If node is a tensorflow.keras node it has a slightly different attribute
     structure, which is corrected in this function"""
-    if not isinstance(node, tensorflow.python.keras.engine.node.Node):
+    if not isinstance(node, engine.node.Node):
         return node
 
     # ensure node attributes have multiple elements
     attributes = [
-        'inbound_layers',
-        'input_shapes',
-        'input_tensors',
-        'node_indices',
-        'output_shapes',
-        'output_tensors',
-        'tensor_indices',
+        "inbound_layers",
+        "input_shapes",
+        "input_tensors",
+        "node_indices",
+        "output_shapes",
+        "output_tensors",
+        "tensor_indices",
     ]
     for attr in attributes:
         values = multiple_elements(getattr(node, attr))
@@ -225,8 +240,7 @@ def all_equal(iterator):
     try:
         iterator = iter(iterator)
         first = next(iterator)
-        return all(
-            np.array_equal(first, rest) for rest in iterator)
+        return all(np.array_equal(first, rest) for rest in iterator)
     except StopIteration:
         return True
 

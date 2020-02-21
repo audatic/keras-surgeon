@@ -5,18 +5,18 @@ from setuptools import find_packages
 
 
 setup(
-    name='audatic-kerassurgeon',
+    name="audatic-kerassurgeon",
     version="0.1.3",
-    url='https://github.com/BenWhetton/keras-surgeon',
-    license='MIT',
-    description='A library for performing network surgery on trained Keras '
-                'models. Useful for deep neural network pruning.',
-    author='Ben Whetton',
-    author_email='Ben.Whetton@gmail.com',
-    python_requires='>=3',
-    install_requires=['keras>=2.0.7'],
-    extras_require={'examples': ['pandas'], },
-    tests_require=['pytest'],
-    packages=find_packages('src'),
-    package_dir={'': 'src'}
+    url="https://github.com/BenWhetton/keras-surgeon",
+    license="MIT",
+    description="A library for performing network surgery on trained Keras "
+    "models. Useful for deep neural network pruning.",
+    author="Ben Whetton",
+    author_email="Ben.Whetton@gmail.com",
+    python_requires=">=3",
+    install_requires=["keras>=2.0.7"],
+    extras_require={"examples": ["pandas"],},
+    tests_require=["pytest"],
+    packages=find_packages("src"),
+    package_dir={"": "src"},
 )

@@ -17,12 +17,13 @@ def delete_layer(model, layer, *, node_indices=None, copy=True, custom_objects=N
         Keras Model object with the layer at node_index deleted.
     """
     surgeon = Surgeon(model, copy, custom_objects)
-    surgeon.add_job('delete_layer', layer, node_indices=node_indices)
+    surgeon.add_job("delete_layer", layer, node_indices=node_indices)
     return surgeon.operate()
 
 
-def insert_layer(model, layer, new_layer, *, node_indices=None, copy=True,
-                 custom_objects=None):
+def insert_layer(
+    model, layer, new_layer, *, node_indices=None, copy=True, custom_objects=None
+):
     """Insert new_layer before instances of layer.
 
     If node_indices is not specified. The layer will be inserted before all
@@ -42,13 +43,15 @@ def insert_layer(model, layer, new_layer, *, node_indices=None, copy=True,
         A new Model object with layer inserted.
     """
     surgeon = Surgeon(model, copy, custom_objects)
-    surgeon.add_job('insert_layer', layer,
-                    node_indices=node_indices, new_layer=new_layer)
+    surgeon.add_job(
+        "insert_layer", layer, node_indices=node_indices, new_layer=new_layer
+    )
     return surgeon.operate()
 
 
-def replace_layer(model, layer, new_layer, *,  node_indices=None, copy=True,
-                  custom_objects=None):
+def replace_layer(
+    model, layer, new_layer, *, node_indices=None, copy=True, custom_objects=None
+):
     """Replace instances of layer with new_layer.
 
         If node_indices is not specified, all instances of layer will be
@@ -68,13 +71,15 @@ def replace_layer(model, layer, new_layer, *,  node_indices=None, copy=True,
             A new Model object with layer inserted.
         """
     surgeon = Surgeon(model, copy, custom_objects)
-    surgeon.add_job('replace_layer', layer,
-                    node_indices=node_indices, new_layer=new_layer)
+    surgeon.add_job(
+        "replace_layer", layer, node_indices=node_indices, new_layer=new_layer
+    )
     return surgeon.operate()
 
 
-def delete_channels(model, layer, channels, *, node_indices=None, copy=None,
-                    custom_objects=None):
+def delete_channels(
+    model, layer, channels, *, node_indices=None, copy=None, custom_objects=None
+):
     """Delete channels from instances of the specified layer.
 
     This method is designed to facilitate research into pruning networks to
@@ -104,6 +109,7 @@ def delete_channels(model, layer, channels, *, node_indices=None, copy=None,
         Channels are filters in conv layers and units in other layers.
     """
     surgeon = Surgeon(model, copy, custom_objects)
-    surgeon.add_job('delete_channels', layer, node_indices=node_indices,
-                    channels=channels)
+    surgeon.add_job(
+        "delete_channels", layer, node_indices=node_indices, channels=channels
+    )
     return surgeon.operate()
