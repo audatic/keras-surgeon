@@ -228,7 +228,6 @@ class Surgeon:
             # First check for conditions to bottom out the recursion
             # Check for replaced tensors before any other checks:
             # these are created by the surgery methods.
-            print("###########", node, node_output, self._replace_tensors)
             if node_output.name in self._replace_tensors.keys():
                 logging.debug(
                     "bottomed out at replaced output: {0}".format(node_output)
