@@ -654,7 +654,7 @@ class Surgeon:
                 "Channels_index value(s) out of range. "
                 "This layer only has {0} channels.".format(channel_count)
             )
-        print(
+        logging.info(
             "Deleting {0}/{1} channels from layer: {2}".format(
                 len(channel_indices), channel_count, layer.name
             )
