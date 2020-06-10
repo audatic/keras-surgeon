@@ -9,6 +9,7 @@ from kerassurgeon.utils import get_inbound_nodes, check_tf_model
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def names(tensors):
@@ -223,30 +224,30 @@ class Surgeon:
             # TODO: What happens if nodes have multiple output tensors?
             # Does that ever happen?
             layer = node.outbound_layer
-            logging.debug("getting inputs for: {0}".format(layer.name))
+            logger.debug("getting inputs for: {0}".format(layer.name))
             node_output = utils.single_element(node.output_tensors)
             # First check for conditions to bottom out the recursion
             # Check for replaced tensors before any other checks:
             # these are created by the surgery methods.
             if node_output.name in self._replace_tensors.keys():
-                logging.debug(
+                logger.debug(
                     "bottomed out at replaced output: {0}".format(node_output)
                 )
                 output, output_mask = self._replace_tensors[node_output.name]
                 return output, output_mask
             # Next check if the current node has already been rebuilt.
             elif node in self._finished_nodes.keys():
-                logging.debug("reached finished node: {0}".format(node))
+                logger.debug("reached finished node: {0}".format(node))
                 return self._finished_nodes[node]
             # Next check if one of the graph_inputs has been reached.
             elif node_output.name in names(graph_inputs):
-                logging.debug("bottomed out at a model input")
+                logger.debug("bottomed out at a model input")
                 output_mask = graph_input_masks[graph_inputs.index(node_output)]
                 return node_output, output_mask
             # Otherwise recursively call this method on the inbound nodes.
             else:
                 inbound_nodes = utils.get_node_inbound_nodes(node)
-                logging.debug(
+                logger.debug(
                     "inbound_layers: {0}".format(
                         [node.outbound_layer.name for node in inbound_nodes]
                     )
@@ -274,7 +275,7 @@ class Surgeon:
 
                 # Record that this node has been rebuild
                 self._finished_nodes[node] = (output, output_mask)
-                logging.debug("layer complete: {0}".format(layer.name))
+                logger.debug("layer complete: {0}".format(layer.name))
                 return output, output_mask
 
         # Call the recursive _rebuild_rec method to rebuild the submodel up to
@@ -654,7 +655,7 @@ class Surgeon:
                 "Channels_index value(s) out of range. "
                 "This layer only has {0} channels.".format(channel_count)
             )
-        logging.info(
+        logger.info(
             "Deleting {0}/{1} channels from layer: {2}".format(
                 len(channel_indices), channel_count, layer.name
             )
