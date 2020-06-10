@@ -533,6 +533,9 @@ class Surgeon:
             "GaussianNoise",
             "GaussianDropout",
             "AlphaDropout",
+            "Rename",
+        ) or (
+            layer_class == "TensorFlowOpLayer" and layer.node_def.op == "ResizeBilinear"
         ):
             # Pass-through layers
             outbound_mask = inbound_masks
