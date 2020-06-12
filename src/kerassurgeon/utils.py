@@ -1,18 +1,38 @@
 """Utilities used across other modules."""
 import warnings
 import numpy as np
+import tensorflow as tf
 import tensorflow
 from keras.layers import Layer
 from keras.activations import linear
 import tensorflow.python.keras.engine as engine
+from tensorflow.python.util import nest
 
 
 def clean_copy(model, custom_objects=None):
     """Returns a copy of the model without other model uses of its layers."""
     weights = model.get_weights()
+    print("----- PREV ----")
+    for layer in model.layers:
+        print(layer, layer.non_trainable_weights)
+        print("  ", layer.get_config())
+
+    # print(model.get_config())
+    model.set_weights(weights)
+
     new_model = model.__class__.from_config(
         model.get_config(), custom_objects=custom_objects
     )
+    new_model(tf.zeros(model.input_shape))
+    new_model.summary()
+    # TODO:
+    # QConv2D layers seem to not correctly create weights for the regularizers
+    # even though we call the model explicitely and it seems all get_config() entries make it all the
+    # way through. whats going on here?
+    print("----- COPY ----")
+    for layer in new_model.layers:
+        print(layer, layer.non_trainable_weights)
+        print("  ", layer.get_config())
     new_model.set_weights(weights)
     return new_model
 
@@ -91,9 +111,12 @@ def get_shallower_nodes(node):
 
 def get_node_inbound_nodes(node):
     return [
-        get_inbound_nodes(node.inbound_layers[i])[node_index]
-        for i, node_index in enumerate(node.node_indices)
+        get_inbound_nodes(l) for l in nest.flatten(node.inbound_layers)
     ]
+    # return [
+        # get_inbound_nodes(node.inbound_layers[i])[node_index]
+        # for i, node_index in enumerate(node.node_indices)
+    # ]
 
 
 def get_inbound_nodes(layer):
@@ -190,9 +213,7 @@ def sort_x_by_y(x, y):
 
 def single_element(x):
     """If x contains a single element, return it; otherwise return x"""
-    if len(x) == 1:
-        x = x[0]
-    return x
+    return nest.flatten(x)[0]
 
 
 def multiple_elements(x):
@@ -217,18 +238,18 @@ def check_tf_node(node):
         return node
 
     # ensure node attributes have multiple elements
-    attributes = [
-        "inbound_layers",
-        "input_shapes",
-        "input_tensors",
-        "node_indices",
-        "output_shapes",
-        "output_tensors",
-        "tensor_indices",
-    ]
-    for attr in attributes:
-        values = multiple_elements(getattr(node, attr))
-        setattr(node, attr, values)
+    # attributes = [
+        # "inbound_layers",
+        # "input_shapes",
+        # "input_tensors",
+        # "node_indices",
+        # "output_shapes",
+        # "output_tensors",
+        # "tensor_indices",
+    # ]
+    # for attr in attributes:
+        # values = multiple_elements(getattr(node, attr))
+        # setattr(node, attr, values)
     return node
 
 

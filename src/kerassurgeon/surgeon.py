@@ -3,6 +3,7 @@ import logging
 import numpy as np
 from keras.engine.topology import Node
 from keras.layers import BatchNormalization
+from tensorflow.python.util import nest
 
 from kerassurgeon import utils
 from kerassurgeon.utils import get_inbound_nodes, check_tf_model
@@ -247,15 +248,16 @@ class Surgeon:
             # Otherwise recursively call this method on the inbound nodes.
             else:
                 inbound_nodes = utils.get_node_inbound_nodes(node)
-                logger.debug(
-                    "inbound_layers: {0}".format(
-                        [node.outbound_layer.name for node in inbound_nodes]
-                    )
-                )
+                # logger.debug(
+                    # "inbound_layers: {0}".format(
+                        # [node.outbound_layer.name for node in inbound_nodes]
+                    # )
+                # )
                 # Recursively rebuild the model up to `node`s inbound nodes to
                 # obtain its inputs and input masks
-                inputs, input_masks = zip(*[_rebuild_rec(n) for n in inbound_nodes])
+                inputs, input_masks = zip(*[_rebuild_rec(n) for n in nest.flatten(inbound_nodes)])
 
+                print("---------- inputs", inputs)
                 if all(i is None for i in inputs):
                     output = None
                     output_mask = np.zeros(node.output_shapes[0][1:], dtype=bool)
@@ -269,9 +271,12 @@ class Surgeon:
                         output = utils.single_element(list(inputs))
                     else:
                         output = new_layer(utils.single_element(list(inputs)))
-                else:
+                elif len(nest.flatten(inputs)) == 1:
                     new_layer, output_mask = self._apply_delete_mask(node, input_masks)
                     output = new_layer(utils.single_element(list(inputs)))
+                else:
+                    new_layer, output_mask = self._apply_delete_mask(node, input_masks)
+                    output = new_layer(list(inputs))
 
                 # Record that this node has been rebuild
                 self._finished_nodes[node] = (output, output_mask)
